@@ -1,0 +1,4 @@
+"" import "../com.gw"
+db:sql.open "../wire.db"
+
+say db

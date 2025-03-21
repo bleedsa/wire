@@ -1,0 +1,16 @@
+"" import "../com.gw"
+
+db:sql.open "../wire.db"
+me:whoami db
+
+/ TODO: needs sql escaping
+setBio:{[db;bio]
+        id:me "id"
+        bio:sql.esc bio
+        sql.exe[db;"delete from bios where user = $id"]
+        sql.exe[db;"insert into bios (user,content) values ($id, '$bio')"]}
+
+?[me
+  [setBio[db;POST "bio"]
+   say "Location: /\n"]
+  say "Location: /act/err.php?m=NOT%20LOGGED%20IN&goto=/login.php\n"]

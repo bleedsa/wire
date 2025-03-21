@@ -1,16 +1,25 @@
+ROOT:"/srv/wire"
+
+trimL:{+/{" "~*x}{1_x}/-1$x}
+
 whoami:{[db]
-        c:("="\)'";"\env "HTTP_COOKIE"
-        hash:1_*c@&{"sesh"~x@0}'c
+        c:!/+(trimL@url.dec@)''("="\)'";"\env "HTTP_COOKIE"
+        hash:c "sesh"
         sesh:*sql.qry[db;"select * from sessions where hash = '$hash'"]
-        me:*sql.qry[db;"select * from auth where id = "+$sesh "user"]
+        me:?[~0=#sesh
+             *sql.qry[db;"select * from auth where id = "+$sesh "user"]
+             0]
         me}
 
 boards:{[db]sql.qry[db;"select * from boards where not hidden"]}
 
 page:{[db;title;body]
-      v:read "/srv/wire/version.txt"
+      v:read ROOT+"/version.txt"
+      / you or false
       u:.[whoami;db;{[x]0}]
+      / a link to your profile if you're logged in
       n:?[u;"[<a href=\"/user.php?u="+u["name"]+"\">"+u["name"]+"</a>]";""]
+      / boards
       B:" "/{n:x"name";"<a href=\"/board.php?b=$n\">$n</a>"}'boards db
       qq`
       <!DOCTYPE html>
@@ -21,7 +30,7 @@ page:{[db;title;body]
               <link rel="stylesheet" type="text/css" href="/css/theme.php">
           </head>
           <body>
-              <div class="main"
+              <div class="main">
                   <span class="top">
                       <b><a href="/">the wire</a></b>
                       | $n
@@ -35,3 +44,8 @@ page:{[db;title;body]
               </div>
           </body>
       </html>`}
+
+FORM:read STDIN
+POST:!/+url.dec''("="\)'"&"\FORM
+GET:.[{!/+("="\)'"&"\env x};"QUERY_STRING";{[x]()!()}]
+

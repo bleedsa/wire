@@ -21,7 +21,7 @@ $db = new Database('/srv/wire/wire.db');
 		$a = $db->query("select name from boards where not hidden");
 		while ($r = $a->fetchArray()) {
 			$i = $r[0];
-			echo "<a href=\"/board.php?b=$i\">$i</a> ";
+			echo "<a href=\"/board.gw?b=$i\">$i</a> ";
 		}
 	?>
 </span>
