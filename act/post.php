@@ -5,7 +5,7 @@ $db = new Database("../wire.db");
 
 /* check if user is logged in */
 $me = $db->whoami();
-if (!$me) {
+if ($me) {
 	$c = $_POST["content"];
 	$cs = htmlentities(SQLite3::escapeString($c));
 	$t = $_POST["thread"];
