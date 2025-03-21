@@ -9,9 +9,9 @@ body {
 }
 
 @media (max-width:980px) {
-        body {
-                font-size: 200%;
-        }
+	body {
+		font-size: 150%;
+	}
 
 	.top {
 		font-size: 125%;
@@ -40,6 +40,11 @@ body {
 }
 .post-info, .thread-info {
 	font-weight: bold;
+}
+
+.thread-meta {
+	font-size: 80%;
+	float: bottom;
 }
 
 .post-content pre {

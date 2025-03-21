@@ -43,9 +43,9 @@ page:{[db;title;body]
                   <span class="top">$v</span>
               </div>
           </body>
+          <script src="/inc/index.js"></script>
       </html>`}
 
 FORM:read STDIN
 POST:!/+url.dec''("="\)'"&"\FORM
-GET:.[{!/+("="\)'"&"\env x};"QUERY_STRING";{[x]()!()}]
-
+GET:.[{!/+url.dec''("="\)'"&"\env x};"QUERY_STRING";{[x]()!()}]

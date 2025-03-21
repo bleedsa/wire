@@ -17,7 +17,7 @@ db:sql.open "wire.db"
    / T contains sorted threads
    / A contains the timestamp of the last post in T[i]
    I:>at
-   (T;A):{x@I}'(T;at)
+   (T;A):{x I}'(T;at)
 
    / html
    TH:+/{(id;name;aid;board):T[x]@"id" "name" "author" "board"
@@ -31,7 +31,10 @@ db:sql.open "wire.db"
              <span class="thread-info">
                   <a href="/thread.php?id=$id">$name</a>
              </span>
-             by $a (last@$at)
+             <div class="thread-meta">
+                 by $a.
+                 last@<span class="unixtime">$at</span>.
+             </div>
          </div>
          `}'!#I
 

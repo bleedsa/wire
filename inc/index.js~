@@ -1,0 +1,6 @@
+let Ds = document.querySelectorAll(".unixtime");
+
+Ds.forEach((x) => {
+	console.log(`${x}`);
+	return "TIME";
+});
