@@ -13,22 +13,27 @@ db:sql.open "wire.db"
        q:sql.qry[db;"select at from posts where thread = $id order by at desc"]
        *[q]@"at"}'T
    / sort threads by last post
+   / I is the indexes
    / T contains sorted threads
    / A contains the timestamp of the last post in T[i]
-   T:T@>at
+   I:>at
+   (T;A):{x@I}'(T;at)
 
    / html
-   TH:+/{(id;name;aid;board):x@"id" "name" "author" "board"
+   TH:+/{(id;name;aid;board):T[x]@"id" "name" "author" "board"
+         at:A[x]
+
          q:sql.qry[db;"select * from auth where id = '$aid'"]
          a:?[q;[n:*[q]@"name";qq|<a href="/user.php?u=$n">$n</a>|];"[???]"]
+
          qq`
          <div class="thread">
              <span class="thread-info">
                   <a href="/thread.php?id=$id">$name</a>
-                  by $a
              </span>
+             by $a (last@$at)
          </div>
-         `}'T
+         `}'!#I
 
    say page[db;"$name"
             qq`

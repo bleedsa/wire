@@ -20,7 +20,7 @@ page:{[db;title;body]
       / a link to your profile if you're logged in
       n:?[u;"[<a href=\"/user.php?u="+u["name"]+"\">"+u["name"]+"</a>]";""]
       / boards
-      B:" "/{n:x"name";"<a href=\"/board.php?b=$n\">$n</a>"}'boards db
+      B:" "/{n:x"name";"<a href=\"/board.gw?b=$n\">$n</a>"}'boards db
       qq`
       <!DOCTYPE html>
       <html>
