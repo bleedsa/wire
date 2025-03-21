@@ -1,5 +1,7 @@
 <?php
 
+require 'com.php';
+
 session_start();
 
 if (isset($_GET["u"])) {

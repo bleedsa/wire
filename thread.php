@@ -62,7 +62,7 @@ $bn = $db->query("select name from boards where (id={$t["board"]})")->fetchArray
 					echo <<<HTML
 						<div class="post">
 							<span class="post-info">
-								[#$i|<a class="$c" href="/user.php?u=$a">$a</a>@$d]
+								[<a href="#$i">#$i</a>|<a class="$c" href="/user.php?u=$a">$a</a>@$d]
 							</span>
 							<div class="post-content">
 								<pre>{$row["content"]}</pre>

@@ -1,0 +1,11 @@
+"" import "com.gw"
+
+db:sql.open "wire.db"
+Bs:{n:x "name"
+    d:x "description"
+    qq`<div class="board">
+           <a href="/board.php?b=$n">$n</a>
+           <i>$d</i>
+       </div>`}'boards db
+
+say page[db;"index";"\n"/Bs]
