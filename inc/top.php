@@ -1,9 +1,16 @@
+<?php
+
+$db = new Database('/srv/wire/wire.db');
+
+?>
+
 <!-- top bar -->
 <span class="top">
 	<b><a href="/">the wire</a></b> |
 	<?php
-		if (isset($_SESSION["u"])) {
-			$u = htmlspecialchars($_SESSION["u"]);
+		$me = $db->whoami();
+		if ($me) {
+			$u = htmlspecialchars($me["name"]);
 			echo "[<span class=\"you\"><a href=\"/user.php?u=$u\">$u</a></span>]";
 		}
 	?>
@@ -11,8 +18,7 @@
 	<a href="/register.php">register</a>
 	<a href="/about.php">about</a> |
 	<?php
-		$sql = new SQLite3("/srv/wire/wire.db");
-		$a = $sql->query("select name from boards");
+		$a = $db->query("select name from boards where not hidden");
 		while ($r = $a->fetchArray()) {
 			$i = $r[0];
 			echo "<a href=\"/board.php?b=$i\">$i</a> ";

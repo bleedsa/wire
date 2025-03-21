@@ -8,19 +8,42 @@ body {
 	margin-top: 30px;
 }
 
+@media (max-width:980px) {
+        body {
+                font-size: 200%;
+        }
+
+	.top {
+		font-size: 125%;
+	}
+
+	.post-content pre {
+		font-size: 150%;
+	}
+
+        .main {
+		max-width: 90%;
+                width: fit-content;
+        }
+}
+
 .board {
-	border: 1px solid black;
+	border: 2px solid black;
 	margin-top: 15px;
 	padding: 15px;
 }
 
 .post, .thread {
-	border: 1px solid black;
+	border: 2px solid black;
 	padding: 15px;
 	margin-top: 15px;
 }
 .post-info, .thread-info {
 	font-weight: bold;
+}
+
+.post-content pre {
+	white-space: pre-wrap;
 }
 
 /* posts made by you */

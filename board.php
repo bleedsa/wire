@@ -1,19 +1,29 @@
 <?php
 
+require 'com.php';
+
 if (!isset($_GET["b"])) {
 	header("Location: /act/err.php?m=BOARD%20NOT%20FOUND&goto=/");
 	exit();
 }
 
-$sql = new SQLite3("wire.db");
+$db = new Database("wire.db");
+$me = $db->whoami();
+
+if (!$me) {
+	header("Location: /act/err.php?m=NOT%20LOGGED%20IN&goto=/");
+	exit();
+}
+
 $e = SQLite3::escapeString($_GET["b"]);
-$b = $sql->query("select * from boards where (name like '$e')")->fetchArray();
+$b = $db->query("select * from boards where (name = '$e')")->fetchArray();
 if (!$b) {
 	header("Location: /act/err.php?m=BOARD%20NOT%20FOUND&goto=/");
 	exit();
 }
 $bn = $b["name"];
 $bi = $b["id"];
+$bd = $b["description"];
 
 ?>
 <!DOCTYPE html>
@@ -27,6 +37,7 @@ $bi = $b["id"];
 		<div class="main">
 			<?php include "/srv/wire/inc/top.php";?>
 			<h1><?=$bn?></h1>
+			<p><i><?=$bd?></i></p>
 			<h3>new thread</h3>
 			<form method="post" action="/act/thread.php">
 				name: <input type="text" name="name"><br>
@@ -38,11 +49,28 @@ $bi = $b["id"];
 			<br><br>
 
 			<?php
+				$v = [];
 				/* threads in board */
-				$t = $sql->query("select * from threads where (board=$bi)");
+				$t = $db->query("select * from threads where (board=$bi)");
 				while ($row = $t->fetchArray()) {
+					$p = $db->query(<<<SQL
+						select at from posts where thread={$row["id"]}
+						order by at desc
+					SQL)->fetchArray();
+					$p = !!$p ? $p[0] : 0;
+					array_push($v, [$p, $row]);
+				}
+
+				function cmp($x, $y) {
+					return $x[0] < $y[0] ? 1 : -1;
+				}
+				usort($v, "cmp");
+
+				foreach ($v as $x) {
+					$row = $x[1];
 					/* author name */
-					$a = $sql->query("select name from auth where (id={$row["author"]})")->fetchArray()[0];
+					$a = $db->query("select name from auth where (id={$row["author"]})")->fetchArray();
+					$a = $a ? $a[0] : "[???]";
 
 					echo "<div class=\"thread\">";
 					echo "<span class=\"thread-info\"><a href=\"/thread.php?id={$row["id"]}\">{$row["name"]}</a></span>";

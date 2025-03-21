@@ -3,9 +3,11 @@
 session_start();
 
 if (isset($_GET["u"])) {
-	$u = htmlspecialchars(SQLite3::escapeString($_GET["u"]));
+	$usr = SQLite3::escapeString($_GET["u"]);
+	$hu = htmlspecialchars($_GET["u"]);
 } else {
 	header("Location: /act/err.php?m=USER%20NOT%20FOUND&goto=/");
+	exit();
 }
 
 $sql = new SQLite3("wire.db");
@@ -21,19 +23,24 @@ $sql = new SQLite3("wire.db");
 	<body>
 		<div class="main">
 			<?php include "/srv/wire/inc/top.php";?>
-			<h1><?=$u?></h1>
+			<h1><?=$hu?></h1>
 
 			<?php
-				$ui = $sql->query("select id from auth where (name like '$u')")->fetchArray()[0];
-				$b = $sql->query("select content from bios where (user=$ui)")->fetchArray()[0];
+				$ui = $sql->query("select id from auth where (name = '$usr')")->fetchArray();
+				if (!$ui) {
+					header("Location: /act/err.php?m=USER%20NOT%20FOUND&goto=/");
+					exit();
+				}
+
+				$b = $sql->query("select content from bios where (user={$ui[0]})")->fetchArray();
 				if ($b) {
-					echo "<p>$b</p>";
+					echo "<p>".htmlspecialchars($b[0])."</p>";
 				}
 			?>
 
-			<?php if (isset($_SESSION["u"]) && $_SESSION["u"] === $u): ?>
+			<?php if (isset($_SESSION["u"]) && $_SESSION["u"] === $usr): ?>
 				<!-- bio form for logged in users -->
-				<h3>user bio</h3>
+				<h3>set your bio</h3>
 				<form action="/act/settings.php" method="post">
 					<textarea name="bio"></textarea><br>
 					<input type="submit" value="go">

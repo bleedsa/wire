@@ -1,4 +1,6 @@
-<?php session_start();?>
+<?php
+require 'com.php';
+?>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -14,7 +16,7 @@
 
 			<?php
 				$sql = new SQLite3("wire.db");
-				$a = $sql->query("select * from boards");
+				$a = $sql->query("select * from boards where not hidden");
 				while ($x = $a->fetchArray()) {
 					$n = $x["name"];
 					echo "<div class=\"board\">";

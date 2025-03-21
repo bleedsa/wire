@@ -3,16 +3,24 @@
 session_start();
 
 if (isset($_SESSION["u"])) {
-	$u = SQLite3::escapeString($_SESSION["u"]);
-	$c = htmlspecialchars(SQLite3::escapeString($_POST["bio"]));
+	$u = $_SESSION["u"];
+	$us = SQLite3::escapeString($u);
+	$c = $_POST["bio"];
+	$cs = SQLite3::escapeString($c);
 
 	$sql = new SQLite3("../wire.db");
-	$i = $sql->query("select id from auth where (name like '$u')")->fetchArray()[0];
+	$i = $sql->query("select id from auth where (name = '$us')")->fetchArray();
+	if (!$i) {
+		header("Location: /act/err.php?m=USER%20NOT%20%FOUND&goto=/");
+		exit();
+	} else {
+		$i = $i[0];
+	}
 
 	/* clear previous bio */
 	$sql->exec("delete from bios where (user=$i)");
 	/* insert new bio */
-	$sql->exec("insert into bios (user,content) values ($i,'$c')");
+	$sql->exec("insert into bios (user,content) values ($i,'$cs')");
 
 	header("Location: /");
 } else {

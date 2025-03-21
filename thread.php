@@ -1,17 +1,24 @@
 <?php
 
-session_start();
+require 'com.php';
 
 if (!isset($_GET["id"]) || !ctype_digit($_GET["id"])) {
 	header("Location: /act/err.php?m=THREAD%20NOT%20FOUND&goto=/");
 	exit();
 }
 
-$sql = new SQLite3("wire.db");
+$db = new Database("wire.db");
+$me = $db->whoami();
+
+if (!$me) {
+	header("Location: /act/err.php?m=NOT%20LOGGED%20IN&goto=/");
+	exit();
+}
+
 $id = (int)(SQLite3::escapeString($_GET["id"]));
 
 /* thread */
-$t = $sql->query("select * from threads where (id=$id)")->fetchArray();
+$t = $db->query("select * from threads where (id=$id)")->fetchArray();
 if (!$t) {
 	header("Location: /act/err.php?m=THREAD%20NOT%20FOUND&goto=/");
 	exit();
@@ -19,7 +26,7 @@ if (!$t) {
 $n = $t["name"];
 
 /* board name */
-$bn = $sql->query("select name from boards where (id={$t["board"]})")->fetchArray()[0];
+$bn = $db->query("select name from boards where (id={$t["board"]})")->fetchArray()[0];
 
 ?>
 <!DOCTYPE html>
@@ -36,20 +43,32 @@ $bn = $sql->query("select name from boards where (id={$t["board"]})")->fetchArra
 
 			<?php
 				/* posts in thread */
-				$p = $sql->query("select * from posts where (thread=$id)");
+				$p = $db->query("select * from posts where (thread=$id)");
 				while ($row = $p->fetchArray()) {
 					/* author name */
-					$a = $sql->query("select name from auth where (id={$row["author"]})")->fetchArray()[0];
+					$a = $db->query("select name from auth where (id={$row["author"]})")->fetchArray();
+					$a = !!$a ? $a[0] : "???";
+
 					/* datetime string */
 					date_default_timezone_set('America/Chicago');
 					$d = date("M d, Y ha:i:s e", (int)($row["at"]));
-					echo "<div class=\"post\">";
+
+					/* the color class. this basiclly colors your posts differently. */
 					$c = (isset($_SESSION["u"])) ? (($a === $_SESSION["u"]) ? " you" : "") : "";
-					echo "<span class=\"post-info\">[<span class=\"$c\">$a</span>@$d]</span>";
-					echo "<div class=\"post-content\">";
-					echo "{$row["content"]}";
-					echo "</div>";
-					echo "</div>";
+
+					/* the id of the post */
+					$i = $row["id"];
+
+					echo <<<HTML
+						<div class="post">
+							<span class="post-info">
+								[#$i|<a class="$c" href="/user.php?u=$a">$a</a>@$d]
+							</span>
+							<div class="post-content">
+								<pre>{$row["content"]}</pre>
+							</div>
+						</div>
+					HTML;
 				}
 			?>
 
