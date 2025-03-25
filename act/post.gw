@@ -1,0 +1,35 @@
+"" import "../com.gw"
+db:sql.open "../wire.db"
+
+now:util.now 0
+rt.seed now
+
+me:(whoami db) or :say fatal[db;"not logged in";"/login.php"]
+uid:me"id"
+
+/ post params
+POST:(util.multipart FORM) or :say fatal[db;"failed to parse form";"/"]
+(c;t):sql.esc'POST@"content" "thread"
+
+/ if a file is provided, write it to disk and then enter it into the database
+wrF:{[db]
+     f:POST "file"
+     f or :0 0
+     (fn;fc):f@"name" "content"
+     (#[OKFILES]>OKFILES?util.filetype fc)or :say fatal[db;"invalid file type"]"/"
+     fp:"$rc."+fn
+     (fnS;fpS):sql.esc'(fn;fp)
+     util.write["$UPPATH/$fp";fc]
+     sql.exe[db;qq|
+                insert into files (name,path,by,at)
+                values ('$fnS','$fpS',$uid,$now)
+                |]}
+(fid;r):wrF[db] or :say fatal[db;"could not write file";"/thread.gw?id=$t"]
+fid:?[r=0;"null";fid]
+
+(pid;r):sql.exe[db;qq`
+                   insert into posts (author,at,content,thread,file)
+                   values ($uid,$now,'$c','$t',$fid)
+                   `]
+
+say "Location: /thread.gw?id=$t\n"

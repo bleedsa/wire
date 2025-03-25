@@ -79,7 +79,7 @@ $bn = $db->query("select name from boards where (id={$t["board"]})")->fetchArray
 				<input type="submit" value="post">
 			</form>
 
-			<p><a href="/board.php?b=<?=$bn?>">go back</a></p>
+			<p><a href="/board.gw?b=<?=$bn?>">go back</a></p>
 			<?php include "/srv/wire/inc/bottom.php";?>
 		</div>
 	</body>

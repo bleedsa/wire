@@ -1,4 +1,52 @@
 "" import "../com.gw"
 db:sql.open "../wire.db"
 
-say db
+me:(whoami db) or :say fatal[db;"not logged in";"/login.php"]
+uid:me"id"
+
+/ upload path
+upp:"$ROOT/ref"
+
+POST:(util.multipart FORM) or :say fatal[db;"failed to parse form";"/"]
+
+b:(POST"board") or :say fatal[db;"board not provided";"/"]
+bS:sql.esc b
+
+n:(POST"name") or :say fatal[db;"name not provided";"/"]
+nS:sql.esc n
+
+c:(POST"content") or :say fatal[db;"content not provided";"/"]
+cS:sql.esc c
+
+/ if a file is provided, write it to disk and then enter it into the database
+wrF:{[db]
+     f:POST "file"
+     f or :0 0
+     (fn;fc):f@"name" "content"
+     (#[OKFILES]>OKFILES?util.filetype fc)or :say fatal[db;"invalid file type"]"/"
+     fp:"$rc."+fn
+     (fnS;fpS):sql.esc'(fn;fp)
+     util.write["$upp/$fp";fc]
+     sql.exe[db;qq|
+                insert into files (name,path,by,at)
+                values ('$fnS','$fpS',$uid,$now)
+                |]}
+/ get run the op and get the row id
+(fid;r):wrF[db] or :say fatal[db;"failed to write file to disk";"/"]
+fid:?[r=0;"null";$fid]
+
+B:*sql.qry[db;qq|
+              select id from boards where name='$bS'
+              |] or :fatal[db;"board not found";"/"]
+id:B"id"
+
+(tid;r):sql.exe[db;qq|
+                   insert into threads (name,author,board,hidden)
+                   values ('$nS',$uid,'$id',false)
+                   |] or :fatal[db;"failed to insert thread";"/"]
+(pid;r):sql.exe[db;qq|
+                   insert into posts (author,at,content,thread,file)
+                   values ($uid,$now,'$cS',$tid,$fid)
+                   |] or :fatal[db;"failed to insert post";"/"]
+
+say "Location: /thread.gw?id=$tid\n"

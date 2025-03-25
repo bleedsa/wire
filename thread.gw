@@ -1,0 +1,54 @@
+"" import "com.gw"
+say "Content-Type: text/html"
+
+db:sql.open "wire.db"
+me:(whoami db)or :say fatal[db;"NOT LOGGED IN";"/login.php"] 
+id:(sql.esc GET"id")or :say fatal[db;"NO THREAD PROVIDED";"/"]
+
+T:*sql.qry[db;"select * from threads where id = $id"] or :say fatal[db;"thread not found";"/"]
+(name;board):T@"name" "board"
+
+P:sql.qry[db;"select * from posts where thread = $id"] or :say fatal[db;"failed to get threads";"/"]
+PH:{(id;aid;at;cnt;file):x@"id" "author" "at" "content" "file"
+    cntH:html.esc cnt
+    / make a link to the author's user page
+    mkA:{[db;id]
+         q:sql.qry[db;"select name from auth where id = $id"]
+         (()~q) and :"[???]"
+         n:html.esc *[q]@"name"
+         qq|<a href="/user.php?u=$n">$n</a>|}
+    a:mkA[db;aid] or "[???]"
+    / get the file if there is one
+    mkF:{[db;id]
+         q:*sql.qry[db;"select * from files where id = $id"]
+         p:url.enc q@"path"
+         qq|<span class="attachment"><img class="image" src="/ref/$p"></span>|}
+    f:?[file;mkF[db;file] or "<!-- failed to get attachment -->";"<!-- no attachment -->"]
+    qq`
+    <div class="post">
+        <span class="post-info">
+            [<a href="#$id">#$id</a>|$a@<span class="unixtime">$at</span>]
+        </span>
+        $f
+        <div class="post-content">
+            <pre>$cntH</pre>
+        </div>
+    </div>
+    `}'P
+
+B:*sql.qry[db;"select name from boards where id = $board"] or :say fatal[db;"failed to get board";"/"]
+Bn:html.esc B@"name"
+
+say page[db;"$name"
+         qq`
+         <h1>$name</h1>
+         $PH
+         <h4>new post</h4>
+         <form method="post" action="/act/post.gw" enctype="multipart/form-data">
+             <textarea name="content"></textarea><br>
+             <input type="file" name="file">
+             <input type="hidden" name="thread" value="$id"><br>
+             <input type="submit" value="post">
+         </form>
+         <p><a href="/board.gw?b=$Bn">go back</a></p>
+         `]

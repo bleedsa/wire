@@ -1,14 +1,16 @@
 ROOT:"/srv/wire"
+UPPATH:"$ROOT/ref"
 
 trimL:{+/{" "~*x}{1_x}/-1$x}
 
 whoami:{[db]
-        c:!/+(trimL@url.dec@)''("="\)'";"\env "HTTP_COOKIE"
+        e:(env "HTTP_COOKIE") or :()
+        c:!/+(trimL@url.dec@)''("="\)'";"\e
         hash:c "sesh"
         sesh:*sql.qry[db;"select * from sessions where hash = '$hash'"]
         me:?[~0=#sesh
              *sql.qry[db;"select * from auth where id = "+$sesh "user"]
-             0]
+             ()]
         me}
 
 boards:{[db]sql.qry[db;"select * from boards where not hidden"]}
@@ -46,6 +48,19 @@ page:{[db;title;body]
           <script src="/inc/index.js"></script>
       </html>`}
 
+fatal:{[db;err;goto]page[db;"fatal: $err"
+                         qq`
+                         <h1>$err</h1>
+                         <p><a href="$goto">go back</a></p>
+                         `]}
+
 FORM:read STDIN
-POST:!/+url.dec''("="\)'"&"\FORM
 GET:.[{!/+url.dec''("="\)'"&"\env x};"QUERY_STRING";{[x]()!()}]
+
+OKFILES:("image/jpeg";"image/png")
+
+now:util.now 0
+rt.seed now
+
+/ make a random string
+rc:"c"$97+64?26

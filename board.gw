@@ -1,9 +1,10 @@
 "" import "com.gw"
 
 db:sql.open "wire.db"
+me:whoami db
 
-?[(GET"b")&GET
-  [b:GET"b";bS:sql.esc b
+b:{[GET]
+   b:GET"b";bS:sql.esc b
    B:*sql.qry[db;"select * from boards where name = '$bS'"]
    (id;desc;name):B@"id" "description" "name"
 
@@ -11,44 +12,56 @@ db:sql.open "wire.db"
    T:sql.qry[db;"select * from threads where board = $id"]
    at:{id:x"id"
        q:sql.qry[db;"select at from posts where thread = $id order by at desc"]
-       *[q]@"at"}'T
+       ?[q;(*[q]@"at");0]}'T
+
    / sort threads by last post
    / I is the indexes
    / T contains sorted threads
    / A contains the timestamp of the last post in T[i]
    I:>at
-   (T;A):{x I}'(T;at)
+   (T;A):{[I;x]x I}[I]'(T;at)
 
    / html
-   TH:+/{(id;name;aid;board):T[x]@"id" "name" "author" "board"
+   TH:+/{[T;A;x]
+         (id;name;aid;board):T[x]@"id" "name" "author" "board"
          at:A[x]
 
+         n:html.esc name
          q:sql.qry[db;"select * from auth where id = '$aid'"]
-         a:?[q;[n:*[q]@"name";qq|<a href="/user.php?u=$n">$n</a>|];"[???]"]
+         a:?[q
+             [u:html.esc *[q]@"name"
+              qq|<a href="/user.php?u=$u">$u</a>|]
+             "[???]"]
 
          qq`
          <div class="thread">
              <span class="thread-info">
-                  <a href="/thread.php?id=$id">$name</a>
+                  <a href="/thread.gw?id=$id">$n</a>
              </span>
              <div class="thread-meta">
                  by $a.
                  last@<span class="unixtime">$at</span>.
              </div>
          </div>
-         `}'!#I
+         `}[T;A]'!#I
 
-   say page[db;"$name"
-            qq`
-            <h1>$name</h1>
-            <p><i>$desc</i></p>
-            <h3>new thread</h3>
-            <form method="post" action="/act/thread.php">
-                name: <input type="text" name="name"><br>
-                <textarea name="content"></textarea><br>
-                <input type="hidden" name="board" value="$name">
-                <input type="submit" value="post">
-            </form>
-            $TH
-            `]]
-  say rq|Location: /act/err.php?m=BOARD%20NOT%20FOUND&goto=/|]
+   (name;desc):html.esc'(name;desc)
+   page[db;"$name"
+        qq`
+        <h1>$name</h1>
+        <p><i>$desc</i></p>
+        <h3>new thread</h3>
+        <form method="post" action="/act/thread.gw" enctype="multipart/form-data">
+            name: <input type="text" name="name"><br>
+            <textarea name="content"></textarea><br>
+            <input type="file" name="file">
+            <br>
+            <input type="hidden" name="board" value="$name">
+            <input type="submit" value="post">
+        </form>
+        $TH
+        `]}
+
+say ?[(GET"b")&GET
+      ?[me;b@GET;fatal[db;"NOT LOGGED IN";"/login.php"]]
+      fatal[db;"NO BOARD PROVIDED";"/"]]+"\n"
