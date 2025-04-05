@@ -57,7 +57,7 @@ fatal:{[db;err;goto]page[db;"fatal: $err"
 FORM:read STDIN
 GET:.[{!/+url.dec''("="\)'"&"\env x};"QUERY_STRING";{[x]()!()}]
 
-OKFILES:"image/jpeg" "image/png" "image/gif"
+OKFILES:"image/jpeg" "image/png" "image/gif" "image/webp"
 
 now:util.now 0
 rt.seed now
