@@ -23,7 +23,9 @@ PH:{(id;aid;at;cnt;file):x@"id" "author" "at" "content" "file"
          q:*sql.qry[db;"select * from files where id = $id"]
          p:url.enc q@"path"
          qq|<span class="attachment"><img class="image" src="/ref/$p"></span>|}
-    f:?[file;mkF[db;file] or "<!-- failed to get attachment -->";"<!-- no attachment -->"]
+    f:?[file
+        mkF[db;file] or "<!-- failed to get attachment -->"
+        "<!-- no attachment -->"]
     qq`
     <div class="post">
         <span class="post-info">
