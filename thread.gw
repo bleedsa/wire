@@ -27,7 +27,7 @@ PH:{(id;aid;at;cnt;file):x@"id" "author" "at" "content" "file"
         mkF[db;file] or "<!-- failed to get attachment -->"
         "<!-- no attachment -->"]
     qq`
-    <div class="post">
+    <div id="$id" class="post">
         <span class="post-info">
             [<a href="#$id">#$id</a>|$a@<span class="unixtime">$at</span>]
         </span>
@@ -38,12 +38,15 @@ PH:{(id;aid;at;cnt;file):x@"id" "author" "at" "content" "file"
     </div>
     `}'P
 
+last:(P@-1+#P)@"id"
+
 B:*sql.qry[db;"select name from boards where id = $board"] or :say fatal[db;"failed to get board";"/"]
 Bn:html.esc B@"name"
 
 say page[db;"$name"
          qq`
-         <h1>$name</h1>
+         <h1>$name <span class="small">($Bn)</span></h1>
+         <p><a href="#$last">go to latest</a></p>
          $PH
          <h4>new post</h4>
          <form method="post" action="/act/post.gw" enctype="multipart/form-data">

@@ -12,7 +12,7 @@ if (!!$h && password_verify($p, $h["hash"])) {
 	$s = bin2hex(random_bytes(32));
 
 	$sql->exec("insert into sessions (user,hash) values ({$h["id"]},'$s')");
-	setcookie("sesh", $s, time()+3600, "/");
+	setcookie("sesh", $s, time() + (10 * 365 * 12 * 60 * 60), "/");
 
 	header("Location: /");
 } else {

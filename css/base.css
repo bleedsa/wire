@@ -1,3 +1,7 @@
+:target {
+	background-color: #dddddd;
+}
+
 body {
 	font-family: monospace;
 }
@@ -6,25 +10,6 @@ body {
 	width: 600px;
 	margin: auto;
 	margin-top: 30px;
-}
-
-@media (max-width:980px) {
-	body {
-		font-size: 150%;
-	}
-
-	.top {
-		font-size: 125%;
-	}
-
-	.post-content pre {
-		font-size: 150%;
-	}
-
-        .main {
-		max-width: 90%;
-                width: fit-content;
-        }
 }
 
 .board {
@@ -74,3 +59,23 @@ body {
 	max-width: 70%;
 	margin: 10px;
 }
+
+.small {
+	font-size: 70%;
+}
+
+@media (max-width:980px) {
+	body {
+		font-size: xx-large;
+	}
+
+        .main {
+		max-width: 90%;
+                width: fit-content;
+        }
+
+	.board, .post, .thread {
+		margin-top: 1.5rem;
+	}
+}
+
