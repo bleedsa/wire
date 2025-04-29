@@ -1,0 +1,10 @@
+db:sql.open "../wire.db"
+
+q:sql.qry[db;"select * from boards where not hidden"] or :say fatal[db;"failed to get boards";";"]
+B:{!["id" "name" "description"
+     x@"id" "name" "description"]}'q
+
+sql.cls db
+say "Content-Type: application/json\n"
+say "" json !["boards" "count"
+              (B;       #B    )]

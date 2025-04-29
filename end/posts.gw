@@ -1,0 +1,19 @@
+"" import "../com.gw"
+
+db:sql.open "../wire.db"
+
+has[GET;"thread"] or :say fatal[db;"no thread provided";"/"]
+t:GET"thread"
+$["i";t] or :say fatal[db;"thread id is not a number";"/"]
+
+q:sql.qry[db;qq`
+             select * from posts
+             where thread = $t
+             `] or :say fatal[db;"failed to get posts";"/end"]
+sql.cls db
+
+P:{![k;x@k:"id" "file" "at" "author" "content" "thread"]}'q
+
+say "Content-Type: application/json\n"
+say "" json !["posts" "count"
+              (P;     #P     )]

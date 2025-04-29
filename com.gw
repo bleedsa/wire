@@ -57,10 +57,13 @@ fatal:{[db;err;goto]page[db;"fatal: $err"
 FORM:read STDIN
 GET:.[{!/+url.dec''("="\)'"&"\env x};"QUERY_STRING";{[x]()!()}]
 
-OKFILES:"image/jpeg" "image/png" "image/gif" "image/webp"
+OKFILES:"image/jpeg" "image/png" "image/gif" "image/webp" "audio/mpeg"
 
 now:util.now 0
 rt.seed now
 
 / make a random string
 rc:"c"$97+64?26
+
+/ does vector x have element y?
+has:{#[x]>![x]?y}

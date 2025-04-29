@@ -32,4 +32,4 @@ fid:?[r=0;"null";fid]
                    values ($uid,$now,'$c','$t',$fid)
                    `]
 
-say "Location: /thread.gw?id=$t\n"
+say "Location: /thread.gw?id=$t#$pid\n"

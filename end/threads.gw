@@ -1,0 +1,19 @@
+"" import "../com.gw"
+
+db:sql.open "../wire.db"
+
+has[GET;"board"] or :say fatal[db;"no board provided";"/"]
+b:GET"board"
+$["i";b] or :say fatal[db;"board id is not a number";"/"]
+
+q:sql.qry[db;qq`
+             select * from threads
+             where board = $b and not hidden
+             `] or :say fatal[db;"failed to get threads";"/end"]
+sql.cls db
+
+T:{![k;x@k:"board" "id" "name" "author"]}'q
+
+say "Content-Type: application/json\n"
+say "" json !["threads" "count"
+              (T;       #T     )]

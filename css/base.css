@@ -1,8 +1,9 @@
 :target {
-	background-color: #dddddd;
+	background-color: #eeeeee;
 }
 
 body {
+	background-color: white;
 	font-family: monospace;
 }
 
