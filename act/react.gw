@@ -1,0 +1,16 @@
+"" import "../com.gw"
+db:sql.open "../wire.db"
+
+now:util.now 0
+rt.seed now
+
+me:(whoami db) or :say fatal[db;"not logged in";"/login.php"]
+uid:me"id"
+
+POST:!/+url.dec''("="\)'"&"\FORM
+reac:sql.esc POST "reaction"
+(tid;pid):(("i"$sql.esc@POST@)'"thread" "post") or :say fatal[db;"invalid post id";"/"]
+R:sql.qry[db;"select * from reactions where reaction = '$reac' and user = $uid and post = $pid"]
+(0=#R) and sql.exe[db;"insert into reactions (reaction,user,post) values ('$reac',$uid,$pid)"]
+
+say "Location: /thread.gw?id=$tid#$pid\n"

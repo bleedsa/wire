@@ -3,12 +3,14 @@ say "Content-Type: text/html"
 
 db:sql.open "wire.db"
 me:(whoami db)or :say fatal[db;"NOT LOGGED IN";"/login.php"] 
-id:(sql.esc GET"id")or :say fatal[db;"NO THREAD PROVIDED";"/"]
+tid:(sql.esc GET"id")or :say fatal[db;"NO THREAD PROVIDED";"/"]
 
-T:*sql.qry[db;"select * from threads where id = $id"] or :say fatal[db;"thread not found";"/"]
+T:*sql.qry[db;"select * from threads where id = $tid"] or :say fatal[db;"thread not found";"/"]
 (name;board):T@"name" "board"
 
-P:sql.qry[db;"select * from posts where thread = $id"] or :say fatal[db;"failed to get threads";"/"]
+/ posts in thread
+P:sql.qry[db;"select * from posts where thread = $tid"] or :say fatal[db;"failed to get threads";"/"]
+/ posts formatted as html
 PH:{(id;aid;at;cnt;file):x@"id" "author" "at" "content" "file"
     cntH:html.esc cnt
     / make a link to the author's user page
@@ -26,6 +28,8 @@ PH:{(id;aid;at;cnt;file):x@"id" "author" "at" "content" "file"
     f:?[file
         mkF[db;file] or "<!-- failed to get attachment -->"
         "<!-- no attachment -->"]
+    / get the reactions
+    likes:#sql.qry[db;"select * from reactions where post = $id and reaction = '♥'"]
     qq`
     <div id="$id" class="post">
         <span class="post-info">
@@ -35,9 +39,18 @@ PH:{(id;aid;at;cnt;file):x@"id" "author" "at" "content" "file"
         <div class="post-content">
             <pre>$cntH</pre>
         </div>
+        <div class="react-form">
+            <form method="post" action="/act/react.gw">
+                <input type="hidden" name="post" value="$id">
+                <input type="hidden" name="thread" value="$tid">
+                <input type="hidden" name="reaction" value="♥">
+                <input type="submit" value="♥ $likes">
+            </form>
+        </div>
     </div>
     `}'P
 
+/ the last post
 last:(P@-1+#P)@"id"
 
 B:*sql.qry[db;"select name from boards where id = $board"] or :say fatal[db;"failed to get board";"/"]
@@ -52,7 +65,7 @@ say page[db;"$name"
          <form method="post" action="/act/post.gw" enctype="multipart/form-data">
              <textarea name="content"></textarea><br>
              <input type="file" name="file">
-             <input type="hidden" name="thread" value="$id"><br>
+             <input type="hidden" name="thread" value="$tid"><br>
              <input type="submit" value="post">
          </form>
          <p><a href="/board.gw?b=$Bn">go back</a></p>
