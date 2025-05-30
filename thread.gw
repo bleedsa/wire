@@ -3,6 +3,7 @@ say "Content-Type: text/html"
 
 db:sql.open "wire.db"
 me:(whoami db)or :say fatal[db;"NOT LOGGED IN";"/login.php"] 
+uid:me "id"
 tid:(sql.esc GET"id")or :say fatal[db;"NO THREAD PROVIDED";"/"]
 
 T:*sql.qry[db;"select * from threads where id = $tid"] or :say fatal[db;"thread not found";"/"]
@@ -52,6 +53,13 @@ PH:{(id;aid;at;cnt;file):x@"id" "author" "at" "content" "file"
 
 / the last post
 last:(P@-1+#P)@"id"
+
+/ read the read entry for this thread from the db if it exists
+R:sql.qry[db;"select * from read where "+RW:"thread = $tid and user = $uid"] or ()
+/ write the new read entry or update it
+?[R
+  sql.exe[db;"update read set post = $last where $RW"]
+  sql.exe[db;"insert into read (user,thread,post) values ($uid,$tid,$last)"]]
 
 B:*sql.qry[db;"select name from boards where id = $board"] or :say fatal[db;"failed to get board";"/"]
 Bn:html.esc B@"name"

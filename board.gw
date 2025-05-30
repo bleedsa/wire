@@ -2,66 +2,82 @@
 
 db:sql.open "wire.db"
 me:whoami db
+uid:me "id"
 
-b:{[GET]
-   b:GET"b";bS:sql.esc b
-   B:*sql.qry[db;"select * from boards where name = '$bS'"]
-   (id;desc;name):B@"id" "description" "name"
+((GET"b")&GET) or :say fatal[db;"NO BOARD PROVIDED";"/"]
+me or :say fatal[db;"NOT LOGGED IN";"/login.php"]
 
-   / threads in board
-   T:sql.qry[db;"select * from threads where board = $id"]
-   at:{id:x"id"
-       q:sql.qry[db;"select at from posts where thread = $id order by at desc"]
-       ?[q;(*[q]@"at");0]}'T
+b:GET"b";bS:sql.esc b
+B:*sql.qry[db;"select * from boards where name = '$bS'"]
+(id;desc;name):B@"id" "description" "name"
 
-   / sort threads by last post
-   / I is the indexes
-   / T contains sorted threads
-   / A contains the timestamp of the last post in T[i]
-   I:>at
-   (T;A):{[I;x]x I}[I]'(T;at)
+/ threads in board
+T:sql.qry[db;"select * from threads where board = $id"]
+at:{id:x"id"
+    q:sql.qry[db;"select at from posts where thread = $id order by at desc"]
+    ?[q;(*[q]@"at");0]}'T
 
-   / html
-   TH:+/{[T;A;x]
-         (id;name;aid;board):T[x]@"id" "name" "author" "board"
-         at:A[x]
+/ sort threads by last post
+/ I is the indexes
+/ T contains sorted threads
+/ A contains the timestamp of the last post in T[i]
+I:>at
+(T;A):{[I;x]x I}[I]'(T;at)
 
-         n:html.esc name
-         q:sql.qry[db;"select * from auth where id = '$aid'"]
-         a:?[q
-             [u:html.esc *[q]@"name"
-              qq|<a href="/user.php?u=$u">$u</a>|]
-             "[???]"]
+/ get the last read post for each thread
+TR:{tid:x "id"
+    sql.qry[db;qq`
+               select * from read
+               where user = $uid and thread = $tid
+               `] or ()}'T
 
-         qq`
-         <div class="thread">
-             <span class="thread-info">
-                  <a href="/thread.gw?id=$id">$n</a>
-             </span>
-             <div class="thread-meta">
-                 by $a.
-                 last@<span class="unixtime">$at</span>.
-             </div>
-         </div>
-         `}[T;A]'!#I
+/ html
+TH:+/{[T;A;TR;x]
+      (id;name;aid;board):T[x]@"id" "name" "author" "board"
+      at:A x
 
-   (name;desc):html.esc'(name;desc)
-   page[db;"$name"
-        qq`
-        <h1>$name</h1>
-        <p><i>$desc</i></p>
-        <h3>new thread</h3>
-        <form method="post" action="/act/thread.gw" enctype="multipart/form-data">
-            name: <input type="text" name="name"><br>
-            <textarea name="content"></textarea><br>
-            <input type="file" name="file">
-            <br>
-            <input type="hidden" name="board" value="$name">
-            <input type="submit" value="post">
-        </form>
-        $TH
-        `]}
+      n:html.esc name
+      q:sql.qry[db;"select * from auth where id = '$aid'"]
+      a:?[q
+          [u:html.esc *[q]@"name"
+           qq|<a href="/user.php?u=$u">$u</a>|]
+          "[???]"]
 
-say ?[(GET"b")&GET
-      ?[me;b@GET;fatal[db;"NOT LOGGED IN";"/login.php"]]
-      fatal[db;"NO BOARD PROVIDED";"/"]]+"\n"
+      / find the last post id
+      P:sql.qry[db;"select * from posts where thread = $id"] or :""
+      LP:(P@-1+#P)@"id"
+
+      / the read entry in the db
+      R:*TR x
+      / the read class to apply to the div
+      r:?[R;?[LP=R"post";"read";"unread"];"unread"]
+
+      qq`
+      <div class="thread $r">
+          <span class="thread-info">
+               <a href="/thread.gw?id=$id">$n</a>
+          </span>
+          <div class="thread-meta">
+              by $a.
+              last@<span class="unixtime">$at</span>.
+          </div>
+      </div>
+      `}[T;A;TR]'!#I
+
+(name;desc):html.esc'(name;desc)
+p:page[db;"$name"
+       qq`
+       <h1>$name</h1>
+       <p><i>$desc</i></p>
+       <h3>new thread</h3>
+       <form method="post" action="/act/thread.gw" enctype="multipart/form-data">
+           name: <input type="text" name="name"><br>
+           <textarea name="content"></textarea><br>
+           <input type="file" name="file">
+           <br>
+           <input type="hidden" name="board" value="$name">
+           <input type="submit" value="post">
+       </form>
+       $TH
+       `]
+say p
