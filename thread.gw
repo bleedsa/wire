@@ -30,7 +30,21 @@ PH:{(id;aid;at;cnt;file):x@"id" "author" "at" "content" "file"
         mkF[db;file] or "<!-- failed to get attachment -->"
         "<!-- no attachment -->"]
     / get the reactions
-    likes:#sql.qry[db;"select * from reactions where post = $id and reaction = '♥'"]
+    fndreact:{[id;db|x]sql.qry[db;"select * from reactions where post = $id and reaction = '$x'"]}
+    reactnum:#'fndreact'Rs:("♥";"lol")
+    mkreact:{[id;x]
+             (R;n):x
+             qq`
+             <div class="react-form">
+                 <form method="post" action="/act/react.gw">
+                     <input type="hidden" name="post" value="$id">
+                     <input type="hidden" name="thread" value="$tid">
+                     <input type="hidden" name="reaction" value="$R">
+                     <input type="submit" value="$R $n">
+                 </form>
+             </div>
+             `}[id]
+    reacts:+/mkreact'+(Rs;reactnum)
     qq`
     <div id="$id" class="post">
         <span class="post-info">
@@ -40,14 +54,7 @@ PH:{(id;aid;at;cnt;file):x@"id" "author" "at" "content" "file"
         <div class="post-content">
             <pre>$cntH</pre>
         </div>
-        <div class="react-form">
-            <form method="post" action="/act/react.gw">
-                <input type="hidden" name="post" value="$id">
-                <input type="hidden" name="thread" value="$tid">
-                <input type="hidden" name="reaction" value="♥">
-                <input type="submit" value="♥ $likes">
-            </form>
-        </div>
+        $reacts
     </div>
     `}'P
 

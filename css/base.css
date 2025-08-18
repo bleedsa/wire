@@ -23,6 +23,8 @@ body {
 	border: 2px solid black;
 	padding: 15px;
 	margin-top: 15px;
+	overflow: hidden;
+	display: block;
 }
 .post-info, .thread-info {
 	font-weight: bold;
@@ -67,6 +69,10 @@ body {
 
 .unread {
 	background-color: #eeeeee;
+}
+
+.react-form {
+	float: left;
 }
 
 @media (max-width:980px) {
